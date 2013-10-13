@@ -1,10 +1,3 @@
-/**
- * $RCSfile$
- * $Revision$
- * $Date$
- * $Source$
- * $Author$
- */
 package org.apache.struts2.interceptor;
 
 import java.lang.reflect.Field;
@@ -21,8 +14,17 @@ import com.opensymphony.xwork2.interceptor.AbstractInterceptor;
 import com.opensymphony.xwork2.util.logging.Logger;
 import com.opensymphony.xwork2.util.logging.LoggerFactory;
 
+/**
+ * 
+ * Deprecation Interceptor
+ * <br/>
+ * In dev mode validates whether application uses deprecated or unknown constants
+ * and displays warning.
+ *
+ */
 public class DeprecationInterceptor extends AbstractInterceptor {
 
+  private static final long serialVersionUID = 1L;
   protected static final Logger LOG = LoggerFactory.getLogger(DeprecationInterceptor.class);
   private Container container;
   private boolean hasDeprecated;
@@ -36,9 +38,13 @@ public class DeprecationInterceptor extends AbstractInterceptor {
     validate();
     if (devMode && hasDeprecated)
       LOG.info(message);
-    return null;
+    return invocation.invoke();
   }
 
+  /**
+   * Validates constants. Validation goes on only if devMode is set.
+   * @throws Exception
+   */
   private void validate() throws Exception {
     if (validated)
       return;
@@ -55,7 +61,8 @@ public class DeprecationInterceptor extends AbstractInterceptor {
           strutsConstants.add((String)field.get(XWorkConstants.class));
 
       Set<String> applicationConstants = container.getInstanceNames(String.class);
-      if(!strutsConstants.containsAll(applicationConstants)) {
+      if (!strutsConstants.containsAll(applicationConstants)) {
+        hasDeprecated = true;
         Set<String> deprecated = new HashSet<String>(applicationConstants);
         deprecated.removeAll(strutsConstants);
         prepareMessage(deprecated);
@@ -64,24 +71,27 @@ public class DeprecationInterceptor extends AbstractInterceptor {
     validated = true;
   }
 
+  /**
+   * Prepares message to display
+   * @param deprecated A set with deprecated/unknown constants
+   */
   private void prepareMessage(Set<String> deprecated) {
     StringBuilder sb = new StringBuilder("\n");
     sb.append("*************************************************************************************\n");
     sb.append("*************************************************************************************\n");
     sb.append("*************************************************************************************\n");
     sb.append("*****                                                                           *****\n");
+    sb.append("*****                               WARNING                                     *****\n");
     sb.append("*****                YOU USE DEPRECATED / UNKNOWN CONSTANTS                     *****\n");
     sb.append("*****                                                                           *****\n");
-    
-    for(String dep : deprecated) {
-      sb.append("-> ");
-      sb.append(dep);
-      sb.append("\n");
-    }
+
+    for (String dep : deprecated)
+      sb.append(String.format("*****  -> %-69s *****\n", dep));
+
     sb.append("*************************************************************************************\n");
     sb.append("*************************************************************************************\n");
     sb.append("*************************************************************************************\n");
-    
+
     message = sb.toString();
   }
 
