@@ -17,7 +17,7 @@ import com.opensymphony.xwork2.util.logging.LoggerFactory;
 /**
  * 
  * Deprecation Interceptor
- * <br/><br />
+ * <br/>
  * In dev mode validates whether application uses deprecated or unknown constants
  * and displays warning.
  *
